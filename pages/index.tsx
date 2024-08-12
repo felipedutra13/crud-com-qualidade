@@ -28,6 +28,7 @@ function HomePage() {
     useEffect(() => {
         if (!initialLoad.current) {
             todoController.get({ page }).then(({ todos, pages }) => {
+                console.log(todos);
                 setTodos(todos);
                 setTotalPages(pages);
             }).finally(() => initialLoad.current = true);

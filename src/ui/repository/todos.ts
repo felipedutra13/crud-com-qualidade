@@ -21,6 +21,8 @@ function get({
                 JSON.parse(await response.text())
             );
 
+            console.log("server:", page, limit, JSON.stringify(responseFromServer))
+
             return {
                 todos: responseFromServer.todos,
                 total: responseFromServer.total,
@@ -92,6 +94,7 @@ function parseResponseFromServer(responseBody: unknown): {
     pages: number;
     todos: Array<Todo>;
 } {
+    console.log("body", responseBody)
     if (
         responseBody !== null &&
         typeof responseBody === "object" &&

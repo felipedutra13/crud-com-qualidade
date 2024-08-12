@@ -1,3 +1,5 @@
+import { HttpNotFoundError } from "@server/infra/errors";
+
 interface TodoRepositoryGetParams {
     page?: number;
     limit?: number;
@@ -54,10 +56,23 @@ async function toggleDone(id: string): Promise<Todo> {
     return todo;
 }
 
+async function deleteById(id: string) {
+    const ALL_TODOS = getTodos();
+
+    const todo = ALL_TODOS.find(todo => todo.id === id);
+
+    if (!todo) {
+        throw new HttpNotFoundError("Todo not found");
+    }
+
+    // faz o delete
+}
+
 export const todoRepository = {
     get,
     createByContent,
-    toggleDone
+    toggleDone,
+    deleteById
 };
 
 function create() {
