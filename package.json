@@ -1,5 +1,6 @@
 {
     "dependencies": {
+        "@supabase/supabase-js": "^2.45.3",
         "next": "^14.2.3",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
@@ -12,8 +13,11 @@
         "@types/node": "20.12.8",
         "@types/react": "18.3.1",
         "@typescript-eslint/eslint-plugin": "^5.56.0",
+        "cypress": "^13.13.3",
         "eslint": "^8.36.0",
         "eslint-config-prettier": "^8.8.0",
+        "eslint-plugin-chai-friendly": "^1.0.1",
+        "eslint-plugin-cypress": "^3.5.0",
         "eslint-plugin-import": "^2.27.5",
         "eslint-plugin-n": "^15.6.1",
         "eslint-plugin-prettier": "^4.2.1",
@@ -21,6 +25,7 @@
         "eslint-plugin-react": "^7.32.2",
         "nodemon": "^2.0.21",
         "prettier": "^2.8.7",
+        "start-server-and-test": "^2.0.5",
         "typescript": "5.4.5"
     },
     "scripts": {
@@ -28,7 +33,10 @@
         "build": "next build",
         "start": "next start",
         "lint": "eslint ./**/*.{jsx,jsx,ts,tsx}",
-        "lint:fix": "npm run lint -- --fix"
+        "lint:fix": "npm run lint -- --fix",
+        "cy:open": "cypress open",
+        "cy:run": "cypress run",
+        "test": "start-server-and-test start-server http://localhost:3000 cy:run"
     },
     "keywords": [],
     "author": "",

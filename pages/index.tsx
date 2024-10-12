@@ -61,7 +61,7 @@ function HomePage() {
                         }
                     });
                 }}>
-                    <input type="text" placeholder="Correr, Estudar..." value={newTodoContent} onChange={(event) => {
+                    <input name="add-todo" type="text" placeholder="Correr, Estudar..." value={newTodoContent} onChange={(event) => {
                         setNewTodoContent(event.target.value);
                     }} />
                     <button type="submit" aria-label="Adicionar novo item">
@@ -128,7 +128,16 @@ function HomePage() {
                                         {!todo.done && <s>todo.content</s>}
                                     </td>
                                     <td align="right">
-                                        <button data-type="delete">
+                                        <button data-type="delete"
+                                        onClick={() => {
+                                            todoController.deleteById(todo.id)
+                                            .then(() => {
+                                                setTodos(todos.filter(currentTodo => currentTodo.id !== todo.id))
+                                            })
+                                            .catch(() => {
+                                                console.log("Failed to delete!")
+                                            })
+                                        }}>
                                             Apagar
                                         </button>
                                     </td>

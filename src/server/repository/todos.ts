@@ -1,4 +1,6 @@
 import { HttpNotFoundError } from "@server/infra/errors";
+import { Todo, TodoSchema } from "@server/schema/todo";
+import { supabase } from "@server/infra/db/supabase";
 
 interface TodoRepositoryGetParams {
     page?: number;
@@ -11,61 +13,107 @@ interface TodoRepositoryGetOutput {
     pages: number;
 }
 
-interface Todo {
-    id: string;
-    content: string;
-    date: string;
-    done: boolean;
-}
-
-function get({
+async function get({
     page,
     limit,
-}: TodoRepositoryGetParams = {}): TodoRepositoryGetOutput {
+}: TodoRepositoryGetParams = {}): Promise<TodoRepositoryGetOutput> {
     const currentPage = page || 1;
     const currentLimit = limit || 2;
 
-    const ALL_TODOS = getTodos();
-
     const startIndex = (currentPage - 1) * currentLimit;
-    const endIndex = currentPage * currentLimit;
-    const totalPages = Math.ceil(ALL_TODOS.length / limit);
+    const endIndex = currentPage * currentLimit - 1;
+    const { data, error, count } = await supabase.from("todos")
+        .select("*", {
+            count: "exact"
+        })
+        .order("date", { ascending: true })
+        .range(startIndex, endIndex);
+
+    const parsedData = TodoSchema.array().safeParse(data);
+
+    if (!parsedData.success) {
+        throw new Error("Failed to parse data! " + parsedData.error);
+    }
+
+    if (error) {
+        throw new Error("Failed to fecth data!");
+    }
+
+    const todos = parsedData.data;
+    const total = count || todos.length;
+    const totalPages = Math.ceil(total / currentLimit);
+
 
     return {
-        todos: ALL_TODOS.slice(startIndex, endIndex),
-        total: ALL_TODOS.length,
-        pages: totalPages,
+        todos,
+        total,
+        pages: totalPages
     };
 }
 
+async function getTodoById(id: string): Promise<Todo> {
+    const { data, error } = await supabase
+        .from("todos")
+        .select("*")
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        throw new Error("Failed to get todo by id!");
+    }
+
+    const parsedData = TodoSchema.safeParse(data);
+
+    if (!parsedData.success) {
+        throw new Error("Failed to parse data! " + parsedData.error);
+    }
+
+    return parsedData.data;
+
+}
+
 async function createByContent(content: string): Promise<Todo> {
-    const newTodo = create();
-    return newTodo;
+    const { data, error } = await supabase.from("todos")
+        .insert([{
+            content,
+        }])
+        .select()
+        .single()
+
+    if (error) {
+        throw new Error("Failed to create todo");
+    }
+
+    const parsedData = TodoSchema.parse(data);
+    return parsedData;
 }
 
 async function toggleDone(id: string): Promise<Todo> {
-    const ALL_TODOS = getTodos();
+    const todo = await getTodoById(id);
+    const { data, error } = await supabase.from("todos")
+        .update([{
+            done: !todo.done
+        }])
+        .eq('id', id)
+        .select()
+        .single();
 
-    const todo = ALL_TODOS.find(todo => todo.id === id);
-
-    if (!todo) {
-        throw new Error("Todo not found");
+    if (error) {
+        throw new Error("Failed to update todo");
     }
 
-    todo.done =!todo.done;
-    return todo;
+    const parsedData = TodoSchema.parse(data);
+    return parsedData;
 }
 
 async function deleteById(id: string) {
-    const ALL_TODOS = getTodos();
+    const { error } = await supabase.from("todos").delete().match({
+        id
+    });
 
-    const todo = ALL_TODOS.find(todo => todo.id === id);
-
-    if (!todo) {
+    if (error) {
         throw new HttpNotFoundError("Todo not found");
     }
-
-    // faz o delete
 }
 
 export const todoRepository = {
@@ -74,28 +122,3 @@ export const todoRepository = {
     toggleDone,
     deleteById
 };
-
-function create() {
-    return {
-        id: "5550a88a-50ca-448f-bbb0-c1480ee81f23",
-        date: "2023-03-27T00:07:51.718Z",
-        content: "Primeira TODO",
-        done: false,
-    };
-}
-function getTodos() {
-    return [
-        {
-            id: "5550a88a-50ca-448f-bbb0-c1480ee81f23",
-            date: "2023-03-27T00:07:51.718Z",
-            content: "Primeira TODO",
-            done: false,
-        },
-        {
-            id: "ae800f92-2993-4278-9b1c-917da9c459b7",
-            date: "2023-03-27T00:07:51.718Z",
-            content: "Atualizada!",
-            done: false,
-        },
-    ];
-}

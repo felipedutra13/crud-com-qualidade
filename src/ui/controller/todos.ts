@@ -55,7 +55,7 @@ function toggleDone({ id, onError, updateTodoOnScreen }: TodoControllerToggleDon
             updateTodoOnScreen();
         })
         .catch(() => {
-            onerror();
+            onError();
         });
 }
 
@@ -69,9 +69,15 @@ function filterTodosByContent<Todo>(search: string, todos: Array<Todo & { conten
     return homeTodos;
 }
 
+async function deleteById(id: string) : Promise<void> {
+    const todoId = id;
+    await todoRepository.deleteById(todoId);
+}
+
 export const todoController = {
     get,
     filterTodosByContent,
     create,
     toggleDone,
+    deleteById
 };

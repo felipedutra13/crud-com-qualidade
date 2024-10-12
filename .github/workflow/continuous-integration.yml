@@ -1,0 +1,28 @@
+name: "[CI] continuous integration"
+
+#Sempre que tiver um commit ou um PR for aberto
+on:
+    pull_request:
+        types: [opened, synchronize]
+
+jobs:
+    lint: 
+        runs-on: ubunt-latest
+        steps:
+            ## COMMON CI STEPS
+            - uses: actions/checkout@v3
+            - names: "Install dependencies"
+              run: "npm install"
+            - name: "Lint"
+              run: "npm run lint"
+    tests:
+        runs-on: ubunt-latest
+        container: cypress/browses:node18.12.0-chrome107
+        steps:
+            ## COMMON CI STEPS
+            - uses: actions/checkout@v3
+            ## ========================
+              run: "npm install"
+            - name: "Test"
+              run: "npm run test"
+
